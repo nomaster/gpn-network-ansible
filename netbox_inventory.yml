@@ -1,0 +1,9 @@
+plugin: netbox.netbox.nb_inventory
+plurals: no
+query_filters:
+  - role: switch
+  - site: hallenbau-a
+roles:
+  - switch
+group_by:
+  - status
