@@ -5,7 +5,6 @@
     - netbox.netbox
 
   tasks:
-
     - name: Create switch
       netbox_device:
         netbox_url: "{{ lookup('ansible.builtin.env', 'NETBOX_URL') }}"
@@ -15,4 +14,103 @@
           device_type: DCS-7050T-64
           device_role: Switch
           site: "Hallenbau A"
+          location: "{{ location }}"
+          status: Active
+        state: present
+    - name: Create POE Injector
+      netbox_device:
+        netbox_url: "{{ lookup('ansible.builtin.env', 'NETBOX_URL') }}"
+        netbox_token: "{{ lookup('ansible.builtin.env', 'NETBOX_TOKEN') }}"
+        data:
+          name: "{{ injector_name }}"
+          device_type: "generic_poe_injector"
+          device_role: "poe power delivery"
+          site: "Hallenbau A"
+          location: "{{ location }}"
+          status: Active
+        state: present
+    - name: Create Access Point
+      netbox_device:
+        netbox_url: "{{ lookup('ansible.builtin.env', 'NETBOX_URL') }}"
+        netbox_token: "{{ lookup('ansible.builtin.env', 'NETBOX_TOKEN') }}"
+        data:
+          name: "{{ ap_name }}"
+          device_type: "AP-225"
+          device_role: "access-point"
+          site: "Hallenbau A"
+          location: "{{ location }}"
+          status: Active
+        state: present
+    - name: Create circuit
+      netbox_circuit:
+        netbox_url: "{{ lookup('ansible.builtin.env', 'NETBOX_URL') }}"
+        netbox_token: "{{ lookup('ansible.builtin.env', 'NETBOX_TOKEN') }}"
+        data:
+          cid: "{{ circuit_name }}"
+          circuit_type: "Fiber"
+          status: Active
+        state: present
+    - name: Create circuit termination A
+      netbox_circuit_termination:
+        netbox_url: "{{ lookup('ansible.builtin.env', 'NETBOX_URL') }}"
+        netbox_token: "{{ lookup('ansible.builtin.env', 'NETBOX_TOKEN') }}"
+        data:
+          circuit: "{{ circuit_name }}"
+          term_side: A
+          site: "Hallenbau A"
+        state: present
+    - name: Create circuit termination Z
+      netbox_circuit_termination:
+        netbox_url: "{{ lookup('ansible.builtin.env', 'NETBOX_URL') }}"
+        netbox_token: "{{ lookup('ansible.builtin.env', 'NETBOX_TOKEN') }}"
+        data:
+          circuit: "{{ circuit_name }}"
+          term_side: Z
+          site: "Hallenbau A"
+    - name: Connect switch to circuit
+      netbox_cable:
+        netbox_url: "{{ lookup('ansible.builtin.env', 'NETBOX_URL') }}"
+        netbox_token: "{{ lookup('ansible.builtin.env', 'NETBOX_TOKEN') }}"
+        data:
+          termination_a_type: dcim.interface
+          termination_a:
+            device: "{{ switch_name }}"
+            name: "Ethernet52"
+          termination_b_type: circuits.circuittermination
+          termination_b:
+            provider: "GPN-NOC"
+            circuit: "{{ circuit_name }}"
+            term_side: "Z"
+          status: connected
+        state: present
+      tags: debug
+    - name: Connect switch to injector
+      netbox_cable:
+        netbox_url: "{{ lookup('ansible.builtin.env', 'NETBOX_URL') }}"
+        netbox_token: "{{ lookup('ansible.builtin.env', 'NETBOX_TOKEN') }}"
+        data:
+          termination_a_type: dcim.interface
+          termination_a:
+            device: "{{ switch_name }}"
+            name: "Ethernet48"
+          termination_b_type: dcim.rearport
+          termination_b:
+            device: "{{ injector_name }}"
+            name: "ethernet"
+          status: connected
+        state: present
+    - name: Connect injector to access-point
+      netbox_cable:
+        netbox_url: "{{ lookup('ansible.builtin.env', 'NETBOX_URL') }}"
+        netbox_token: "{{ lookup('ansible.builtin.env', 'NETBOX_TOKEN') }}"
+        data:
+          termination_a_type: dcim.frontport
+          termination_a:
+            device: "{{ injector_name }}"
+            name: "PoE"
+          termination_b_type: dcim.interface
+          termination_b:
+            device: "{{ ap_name }}"
+            name: "eth0"
+          status: connected
         state: present
