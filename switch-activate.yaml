@@ -1,0 +1,18 @@
+- hosts: localhost
+  gather_facts: False
+  connection: local
+  collections:
+    - netbox.netbox
+
+  tasks:
+
+    - name: Create switch
+      netbox_device:
+        netbox_url: "{{ lookup('ansible.builtin.env', 'NETBOX_URL') }}"
+        netbox_token: "{{ lookup('ansible.builtin.env', 'NETBOX_TOKEN') }}"
+        data:
+          name: "{{ switch_name }}"
+          device_type: DCS-7050T-64
+          device_role: Switch
+          site: "Hallenbau A"
+        state: present
