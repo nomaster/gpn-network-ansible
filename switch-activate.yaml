@@ -11,7 +11,7 @@
         netbox_token: "{{ lookup('ansible.builtin.env', 'NETBOX_TOKEN') }}"
         data:
           name: "{{ switch_name }}"
-          device_type: DCS-7050T-64
+          #device_type: DCS-7050T-64
           device_role: Switch
           site: "Hallenbau A"
           location: "{{ location }}"
@@ -29,6 +29,7 @@
           location: "{{ location }}"
           status: Active
         state: present
+      tags: poe
     - name: Create Access Point
       netbox_device:
         netbox_url: "{{ lookup('ansible.builtin.env', 'NETBOX_URL') }}"
@@ -47,6 +48,7 @@
         netbox_token: "{{ lookup('ansible.builtin.env', 'NETBOX_TOKEN') }}"
         data:
           cid: "{{ circuit_name }}"
+          provider: "GPN-NOC"
           circuit_type: "Fiber"
           status: Active
         state: present
@@ -78,7 +80,6 @@
             name: "Ethernet52"
           termination_b_type: circuits.circuittermination
           termination_b:
-            provider: "GPN-NOC"
             circuit: "{{ circuit_name }}"
             term_side: "Z"
           status: connected
@@ -99,6 +100,7 @@
             name: "ethernet"
           status: connected
         state: present
+      tags: poe
     - name: Connect injector to access-point
       netbox_cable:
         netbox_url: "{{ lookup('ansible.builtin.env', 'NETBOX_URL') }}"
@@ -114,3 +116,4 @@
             name: "eth0"
           status: connected
         state: present
+      tags: poe
