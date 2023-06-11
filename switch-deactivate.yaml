@@ -1,0 +1,26 @@
+- hosts: localhost
+  gather_facts: False
+  connection: local
+  collections:
+    - netbox.netbox
+
+  tasks:
+
+    - name: Set switch status to inventory
+      netbox_device:
+        netbox_url: "{{ lookup('ansible.builtin.env', 'NETBOX_URL') }}"
+        netbox_token: "{{ lookup('ansible.builtin.env', 'NETBOX_TOKEN') }}"
+        data:
+          name: "{{ switch_name }}"
+          status: Inventory
+        state: present
+
+    - name: Remove all cables from the switch
+      netbox_cable:
+        netbox_url: "{{ lookup('ansible.builtin.env', 'NETBOX_URL') }}"
+        netbox_token: "{{ lookup('ansible.builtin.env', 'NETBOX_TOKEN') }}"
+        data:
+          termination_a_type: dcim.interface
+          termination_a:
+            device: "{{ switch_name }}"
+        state: absent
